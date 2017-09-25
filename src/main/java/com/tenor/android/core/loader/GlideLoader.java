@@ -2,48 +2,52 @@ package com.tenor.android.core.loader;
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
-import com.bumptech.glide.GenericRequestBuilder;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.tenor.android.core.model.impl.Media;
 
 public class GlideLoader {
 
-    public static GenericRequestBuilder applyDimens(@NonNull GenericRequestBuilder requestBuilder,
+    public static RequestBuilder applyDimens(@NonNull RequestBuilder requestBuilder,
+                                             @NonNull RequestOptions requestOptions,
                                                     @NonNull GlideTaskParams payload) {
         final Media media = payload.getMedia();
         if (media != null) {
-            requestBuilder.override(media.getWidth(), media.getHeight());
+            requestOptions = requestOptions.override(media.getWidth(), media.getHeight());
         }
+        requestBuilder.apply(requestOptions);
         return requestBuilder;
     }
 
-    public static <T extends ImageView> void load(@NonNull final GenericRequestBuilder requestBuilder,
+    public static <T extends ImageView> void load(@NonNull final RequestBuilder requestBuilder,
+                                                  @NonNull final RequestOptions requestOptions,
                                                   @NonNull final GlideTaskParams<T> payload) {
 
         if (payload.isThumbnail()) {
             requestBuilder.thumbnail(payload.getThumbnailMultiplier());
         }
 
-        requestBuilder.placeholder(payload.getPlaceholder())
-                .into(new GlideDrawableImageViewTarget(payload.getTarget()) {
+        requestBuilder.apply(requestOptions.placeholder(payload.getPlaceholder()))
+                .into(new DrawableImageViewTarget(payload.getTarget()) {
                     @Override
-                    public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         if (payload.getCurrentRetry() < payload.getMaxRetry()) {
                             payload.incrementCurrentRetry();
-                            load(requestBuilder, payload);
+                            load(requestBuilder, requestOptions, payload);
                         } else {
-                            super.onLoadFailed(e, errorDrawable);
+                            super.onLoadFailed(errorDrawable);
                             payload.getListener().failure(payload.getTarget(), errorDrawable);
                         }
                     }
 
                     @Override
-                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> animation) {
-                        super.onResourceReady(resource, animation);
+                    public void onResourceReady(Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        super.onResourceReady(resource, transition);
                         payload.getListener().success(payload.getTarget(), resource);
                     }
                 });

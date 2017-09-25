@@ -7,6 +7,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.tenor.android.core.util.AbstractWeakReferenceUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -52,7 +53,8 @@ public class AssetLoader {
             return;
         }
 
-        Glide.with(weakRef.get()).load(bytes).asGif().diskCacheStrategy(DiskCacheStrategy.ALL)
+        Glide.with(weakRef.get()).load(bytes)
+                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                 .into(imageView);
     }
 

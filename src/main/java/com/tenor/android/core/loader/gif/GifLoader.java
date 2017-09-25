@@ -4,9 +4,11 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.widget.ImageView;
 
-import com.bumptech.glide.GifRequestBuilder;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.request.RequestOptions;
 import com.tenor.android.core.loader.GlideLoader;
 import com.tenor.android.core.loader.GlideTaskParams;
 import com.tenor.android.core.util.AbstractWeakReferenceUtils;
@@ -39,9 +41,9 @@ public abstract class GifLoader extends GlideLoader {
             return;
         }
 
-        GifRequestBuilder<String> requestBuilder = Glide.with(weakRef.get()).load(params.getPath()).asGif()
-                .diskCacheStrategy(DiskCacheStrategy.ALL);
+        RequestBuilder<GifDrawable> requestBuilder = Glide.with(weakRef.get()).asGif().load(params.getPath());
+        RequestOptions options = new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL);
 
-        load(applyDimens(requestBuilder, params), params);
+        load(applyDimens(requestBuilder, options, params), options, params);
     }
 }
